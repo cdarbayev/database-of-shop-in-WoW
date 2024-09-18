@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="./sproject_html.xsl"?>
+<!DOCTYPE sproject SYSTEM "sproject.dtd">
+<sproject>
+    <course database="Oracle" version="11">
+        <cname>Databázové systémy</cname>
+            <code>BI-DBS.21</code>
+            <semester>B222</semester>
+            <seminar>Středa 9:15, Lichý týden, paralelka 1245091879105</seminar>
+    </course>
+        <author>
+            <aname>Chingis Darbayev</aname>
+            <uname>darbachi</uname>
+            <email>darbachi@fit.cvut.cz</email>
+        </author>
+    <content>
+        <declaration>I declare that I have developed my semestral work independently. All the sources I used are listed in the section References.</declaration>
+            <title>Obchod se zbraněmi</title>
+        <description>
+            <title>Popis</title>
+                    <para>Náš obchod se zbraněmi se specializuje na prodej široké škály **vyrobků** ve Stormwindu. Nabízíme především zbraně, kvalitní zbraně různých *nazvev* a *úrovní*, které vám mohou pomoci v boji a bitvě, v každodenním životě. Poskytujeme také **doručovaní**, aby naši **zákazníci** mohli své **objednávky** získat rychle a pohodlně. Pro doručení potřebujeme pouze vaši **adresu** a *jméno*. *Stav* vaší objednávky můžete sledovat následující den od *data* jejího vyřízení naší nástěnce vedle obchodu.</para>
+                    <para></para>
+                    <para>V našem obchodě najdete různé typy zbraní, včetně mečů, dýk, luků, kuší a dalších. Všechny výrobky jsou různé *kvality* a k dostání za výhodné *ceny*. Náš sortiment neustále rozšiřujeme, abychom našim zákazníkům poskytli nejnovější a nejoblíbenější výrobky.</para>
+                    <para></para>
+                    <para>Kromě toho všem našim zákazníkům zaručujeme vysokou úroveň služeb. Náší **zaměstnanci** jsou vždy připraveny zodpovědět jakékoli dotazy a pomoci s výběrem produktů.  Nebojte se, uchováváme záznamy o vašich objednávkách, **polozky**, *datum* prodeje a prodané *množství*. K samotnému nákupu potřebujeme vaše *jméno*, *úroveň* .</para>
+                    <para></para>
+                    <para>Náš obchod se zbraněmi je důvěryhodným partnerem pro všechny ve Stormwindu i mimo něj, kteří hledají kvalitní zboží za přijatelné ceny. Naším cílem je poskytnout všem našim zákazníkům co nejlepší zážitek z nakupování a zajistit, aby každý dostal to, co potřebuje. Máme také obrovské množství **dodavatelů** z celého kontinentu. Tak přijďte, budeme na vás čekat!</para>
+        </description>
+        <data_model>
+            <title>Conceptual schema</title>
+            <dm_picture>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="conceptual_schema.png"/>
+                    </imageobject>
+                </mediaobject>
+            </dm_picture>
+            <dm_discussion>
+                        <para>Smyčka **zakaznik - objednavka - polozka - vyrobek - prodej - zakaznik**: Jedná se o smyčku, díky které může nastat situace, kdy zákazník provedl objednávku a prodej. To se může přirozeně stát, takže to není problém.</para>
+                        <para>Smyčka **zamestnanec - prodejna - adresa - zamestnanec**: Jedná se o smyčku, která řika, že prodejna může mít stejnou adresu s adresou zaměstnance. To nechceme, proto máme IO1.</para>
+                        <para>Smyčka **zamestnanec - prodejna - vyrobek - polozka - objednavka - doruceni_objednavky - adresa - zamestnanec**: Tady může nastat situace, kdy zaměstnanec bude chtit udělat doručování své objednavky na svou adresu. To určitě může být, to není problem.</para>
+                        <para>Smyčka **prodejna - vyrobek - polozka - objednavka - doruceni_objednavky - adresa - prodejna**: Jedná se o smyčku, která řika, že adresa pro doručování objednavky může být adresou prodejny. To se nazyvá osobní vyzvednutí. Toto není problem.</para>
+                        <para>Smyčka **zamestnanec - prodejna - vyrobek - prodej - zakaznik - objednavka - doruceni_objednavky - adresa - zamestnanec**:Tady může být dvě situace:</para>
+                        <para>1) Zaměstnanec příšel na prodejnu jako zákazník a udělal prodej a  objednavku. Taková situace může nastat, protože zaměstnanci mohou příjit když nejsou v praci.</para>
+                        <para>2) Zákazník udělal objednavku s doručením na adresu nějakého zaměstnance. Taková situace může nastat, to není problem.</para>
+                        <para>Smyčka **prodejna - vyrobek - prodej - zakaznik - objednavka - doruceni_objednavky - adresa - prodejna**:Zákaznik udělal osobní vyzvednutí z prodejny, toto určitě může být.</para>
+            </dm_discussion>
+        </data_model>
+        <relational_model>
+            <title>Relační schema</title>
+            <rm_picture>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="relational_schema.png"/>
+                    </imageobject>
+                </mediaobject>
+            </rm_picture>
+        </relational_model>
+        <queries>
+            <title>Dotazy</title>
+            <dotazy>
+                    <dotaz dotaz_id="D1">
+                        <popis_dotazu>
+                                <para>Výrobky, který nikdo nikdy nekupoval na prodejně(prodej).</para>
+                        </popis_dotazu>
+                            <relacni_algebra>prodej!*&gt;vyrobek</relacni_algebra>
+                            <sql>select * from
+vyrobek v
+where not exists (
+    select distinct * from prodej p where p.id_vyrobek=v.id_vyrobek
+);</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D2">
+                        <popis_dotazu>
+                                <para>Vypiš objednávku, kterou udělal  Anduin</para>
+                        </popis_dotazu>
+                            <relacni_algebra>{objednavka[objednavka.id_zakaznik=zakaznik.id_zakaznik]zakaznik(jmeno_zakaznik=&apos;Anduin&apos;)}
+[id_objednavka, id_zakaznik, stav_objednavka, datum_objednavka, mnozstvi_polozka]</relacni_algebra>
+                            <sql>select o.* from objednavka o join zakaznik z on o.id_zakaznik=z.id_zakaznik
+where z.jmeno_zakaznik=&apos;Anduin&apos;;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D3">
+                        <popis_dotazu>
+                                <para>Pro každý prodej vypiš kolik bylo prodáno výrobků celkem. Vypiš jenom prodeje výrobků s id víc než 50, a taky kde bylo prodáno více než 1 výrobek. Výsledek seřaď  sestupné</para>
+                        </popis_dotazu>
+                            <sql>select id_prodej, sum(mnozstvi_vyrobek) as prodano
+from prodej
+where extract(month from datum_prodej)&gt;=10
+group by id_prodej
+having sum(mnozstvi_vyrobek)&gt;1
+order by id_prodej desc;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D4">
+                        <popis_dotazu>
+                                <para>Výběr zákazníky které koupili aspoň jeden výrobek ve všech prodejnách.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>prodej[id_zakaznik,id_prodejna]÷prodejna[id_prodejna]*zakaznik</relacni_algebra>
+                            <sql>select *
+from zakaznik z where not exists(
+    select *
+    from prodejna pr
+    where not exists(
+        select z
+        from prodej p
+        where p.id_prodejna=pr.id_prodejna and p.id_zakaznik=z.id_zakaznik
+    )
+)</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D5">
+                        <popis_dotazu>
+                                <para>Kontrola dotazu D1(Výběr zákazníky které koupili aspoň jeden výrobek ve všech prodejnách)</para>
+                        </popis_dotazu>
+                            <relacni_algebra>prodejna
+\
+{{prodej[id_zakaznik,id_prodejna]÷prodejna[id_prodejna]}*zakaznik*&gt;prodej*&gt;prodejna}</relacni_algebra>
+                            <sql>select *
+from prodejna
+except
+select pr.*
+from prodejna pr join prodej p using(id_prodejna) join zakaznik using(id_zakaznik)
+where id_zakaznik=1</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D6">
+                        <popis_dotazu>
+                                <para>Odstraníme prodejnu s nejmenším počtem prodejů.</para>
+                        </popis_dotazu>
+                            <sql>begin;
+
+select * from prodejna;
+
+delete from prodejna where id_prodejna =(
+    select id_prodejna
+    from prodej
+    group by id_prodejna
+    order by count(*) asc
+    limit 1
+);
+
+select * from prodejna;
+
+rollback;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D7">
+                        <popis_dotazu>
+                                <para>Adresy, na které nikdo nic nedoručil</para>
+                        </popis_dotazu>
+                            <sql>select *
+from adresa a
+where not exists(
+    select 1 from doruceni_objednavky d where d.id_adresa=a.id_adresa
+)
+;
+
+select *
+from adresa
+where id_adresa not in(
+    select id_adresa from doruceni_objednavky
+);
+
+select *
+from adresa
+except
+select a.* from adresa a join doruceni_objednavky d on d.id_adresa=a.id_adresa
+;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D8">
+                        <popis_dotazu>
+                                <para>Vidíme, že si nikdo nekoupil vyrobek Ashbringer, tak na něj dáme slevu 20 %.</para>
+                        </popis_dotazu>
+                            <sql>begin;
+
+select * from vyrobek order by id_vyrobek;
+
+
+update vyrobek
+set cena = cena * 0.8
+where id_vyrobek in(
+    select id_vyrobek
+    from vyrobek 
+    where nazev_vyrobek=&apos;Ashbringer&apos;
+);
+
+select * from vyrobek order by id_vyrobek;
+rollback;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D9">
+                        <popis_dotazu>
+                                <para>U každého typu doručování uveďte, kolikrát byl použit.</para>
+                        </popis_dotazu>
+                            <sql>select *,(select count(*) from doruceni_objednavky where id_typ_dorucovani=typ_dorucovani.id_typ_dorucovani) as pocet
+from typ_dorucovani</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D10">
+                        <popis_dotazu>
+                                <para>Vypiš záznam o prodeji a objednávkách.</para>
+                        </popis_dotazu>
+                            <sql>select *
+from objednavka full join prodej on id_objednavka=id_prodej</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D11">
+                        <popis_dotazu>
+                                <para>Zopakujte poslední objednávku Arthasa, nastavte aktuální datum a změňte ID objednávky.</para>
+                        </popis_dotazu>
+                            <sql>begin;
+
+select * from objednavka;
+insert into objednavka
+select cast(56447 as int), o.id_zakaznik, o.stav_objednavka, cast(now() as date), o.mnozstvi_polozka
+from objednavka o join zakaznik using(id_zakaznik)
+where jmeno_zakaznik=&apos;Arthas&apos;
+order by datum_objednavka desc
+limit 1
+;
+
+select * from objednavka;
+rollback;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D12">
+                        <popis_dotazu>
+                                <para>Pohled na nejlepší výrobky, to jsou ty kteří mají cenu vyšší než 50000 a kvality epic, mythic, unique, legendary.
+Vypiš všechny výrobky s kvalitou legendary.</para>
+                        </popis_dotazu>
+                            <sql>create or replace view nejlepsiVyrobky as
+select *
+from vyrobek
+where cena &gt; 50000 and kvalita in(&apos;epic&apos;, &apos;mythic&apos;, &apos;unique&apos;, &apos;legendary&apos;)
+;
+
+select *
+from nejlepsiVyrobky
+where kvalita=&apos;legendary&apos;;
+
+ </sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D13">
+                        <popis_dotazu>
+                                <para>Seznam všech objednávek, pokud si každý zákazník objedná každý legendární vyrobek.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>zakaznik×vyrobek(kvalita=&apos;legendary&apos;)</relacni_algebra>
+                            <sql>select *
+from zakaznik cross join vyrobek
+where kvalita=&apos;legendary&apos;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D14">
+                        <popis_dotazu>
+                                <para>Vypište všechny adresy zaměstnanců. Ve výstupu budou také adresy, na kterých zaměstnanci nebydlí.</para>
+                        </popis_dotazu>
+                            <sql>select *
+from adresa left join zamestnanec on adresa.id_adresa=zamestnanec.id_adresa
+</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D15">
+                        <popis_dotazu>
+                                <para>Vyberte zákazníky, kteří mají povolání warrior a zároveň mají v objednávce více než 6 položek.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>objednavka(mnozstvi_polozka &gt; 6)*&gt;zakaznik∩zakaznik(povolani=&apos;warrior&apos;)</relacni_algebra>
+                            <sql>select *
+from zakaznik
+where povolani=&apos;warrior&apos;
+intersect
+select z.*
+from zakaznik z join objednavka o on z.id_zakaznik=o.id_zakaznik
+where mnozstvi_polozka&gt;6
+</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D16">
+                        <popis_dotazu>
+                                <para>Výběr přijaté objednávky a objednávky které koupily paladiny.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>zakaznik(povolani=&apos;paladin&apos;)*&gt;objednavka∪objednavka(stav_objednavka=&apos;prijata&apos;)</relacni_algebra>
+                            <sql>select o.*
+from objednavka o where stav_objednavka=&apos;prijata&apos;
+union
+select o.*
+from objednavka o join zakaznik z using(id_zakaznik)
+where povolani=&apos;paladin&apos;;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D17">
+                        <popis_dotazu>
+                                <para>V obchodě probíhala soutěž o nejhezčí jméno zaměstnanců. Zúčastnilo se jí celkem 4 000 lidí. Vypište zaměstnance, počet hlasů a náhodně je seřaďte. Účastníci mohli hlasovat pro více než jednoho zaměstnance.</para>
+                        </popis_dotazu>
+                            <sql>select *
+from (
+    select *, round(random()*4000) pocet
+    from zamestnanec
+
+) soutez
+order by random()</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D18">
+                        <popis_dotazu>
+                                <para>Kolik je zakazniků pro každé povolani.</para>
+                        </popis_dotazu>
+                            <sql>select povolani, count(id_zakaznik) as pocetZakazniku
+from zakaznik
+group by povolani
+order by povolani</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D19">
+                        <popis_dotazu>
+                                <para>Vyberte si prodejny, které májí zboží od dodavatele Beer-Simonis.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>dodavatel(nazev_dodavatele=&apos;Beer-Simonis&apos;)*&gt;prodejna</relacni_algebra>
+                            <sql>select p.*
+from prodejna p join dodavatel d on d.id_prodejna=p.id_prodejna
+where nazev_dodavatele=&apos;Beer-Simonis&apos;;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D20">
+                        <popis_dotazu>
+                                <para>Všechny vyrobky, u kterých typ doručování byl pouze &quot;vyzvednutí&quot;.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>{typ_dorucovani(id_typ_dorucovani=1)*&gt;doruceni_objednavky[polozka.id_objednavka=doruceni_objednavky.id_objednavka&gt;polozka*&gt;vyrobek}
+\
+{typ_dorucovani(id_typ_dorucovani!=1)*&gt;doruceni_objednavky[polozka.id_objednavka=doruceni_objednavky.id_objednavka&gt;polozka*&gt;vyrobek}</relacni_algebra>
+                            <sql>select v.*
+from vyrobek v join polozka p on v.id_vyrobek=p.id_vyrobek join doruceni_objednavky d on p.id_objednavka=d.id_objednavka join typ_dorucovani t on d.id_typ_dorucovani=t.id_typ_dorucovani
+where t.id_typ_dorucovani= 1
+except
+
+select v.*
+from vyrobek v join polozka p on v.id_vyrobek=p.id_vyrobek join doruceni_objednavky d on p.id_objednavka=d.id_objednavka join typ_dorucovani t on d.id_typ_dorucovani=t.id_typ_dorucovani
+where t.id_typ_dorucovani!= 1</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D21">
+                        <popis_dotazu>
+                                <para>Kupte vyrobky: Scepter of the Sun God, Horn of the Chimera , Bracers of the Windrider, zároveň ty vyrobky musejí být minimálně 88 úrovně.</para>
+                        </popis_dotazu>
+                            <sql>select *
+from vyrobek
+where nazev_vyrobek in(&apos;Scepter of the Sun God&apos;, &apos;Horn of the Chimera&apos;,&apos;Bracers of the Windrider&apos;)
+intersect
+select *
+from vyrobek
+where uroven_vyrobek&gt;=88
+</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D22">
+                        <popis_dotazu>
+                                <para>Vypiš minimální, maximální a průměrní úroveň všech výrobků.</para>
+                        </popis_dotazu>
+                            <sql>select min(uroven_vyrobek) as minimum, max(uroven_vyrobek) as maximum, round(avg(uroven_vyrobek),2) as prumer
+from vyrobek</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D23">
+                        <popis_dotazu>
+                                <para>Malganis si zvýšil úroveň o 5 úrovní.</para>
+                        </popis_dotazu>
+                            <sql>begin;
+
+select * from zakaznik;
+
+update zakaznik
+set uroven = uroven + 5 
+where id_zakaznik in(
+select distinct id_zakaznik
+from zakaznik
+where jmeno_zakaznik=&apos;Malganis&apos;)
+;
+
+select * from zakaznik;
+
+rollback;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D25">
+                        <popis_dotazu>
+                                <para>Vypiš objednavky, které byly zadány do 10.1.2022. Vypiš všechny atributy objednávek a zákazníků.</para>
+                        </popis_dotazu>
+                            <relacni_algebra>objednavka(datum_objednavka&lt;&apos;10/1/2022&apos;)*zakaznik</relacni_algebra>
+                            <sql>select *
+from objednavka join zakaznik using(id_zakaznik)
+where datum_objednavka&lt;&apos;10/1/2022&apos;</sql>
+                    </dotaz>
+                    <dotaz dotaz_id="D26">
+                        <popis_dotazu>
+                                <para>Vypište všechny common výrobky, které byly koupeny na prodejně(prodej).</para>
+                        </popis_dotazu>
+                            <sql>select *
+from vyrobek join prodej using(id_vyrobek)
+where kvalita=&apos;common&apos;</sql>
+                    </dotaz>
+            </dotazy>
+            <pokryti_dotazu>
+                        <radek>
+                            <kategorie>A</kategorie>
+                            <odkazy>
+                                    <link url="#D2">D2</link>
+                                    <link url="#D5">D5</link>
+                                    <link url="#D7">D7</link>
+                                    <link url="#D10">D10</link>
+                                    <link url="#D11">D11</link>
+                                    <link url="#D14">D14</link>
+                                    <link url="#D15">D15</link>
+                                    <link url="#D16">D16</link>
+                                    <link url="#D19">D19</link>
+                                    <link url="#D25">D25</link>
+                                    <link url="#D26">D26</link>
+                            </odkazy>
+                            <kategorie_popis>A - Pozitivní dotaz nad spojením alespoň dvou tabulek</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>AR</kategorie>
+                            <odkazy>
+                                    <link url="#D2">D2</link>
+                                    <link url="#D5">D5</link>
+                                    <link url="#D15">D15</link>
+                                    <link url="#D16">D16</link>
+                                    <link url="#D19">D19</link>
+                                    <link url="#D25">D25</link>
+                            </odkazy>
+                            <kategorie_popis>A (RA) - Pozitivní dotaz nad spojením alespoň dvou tabulek</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>B</kategorie>
+                            <odkazy>
+                                    <link url="#D1">D1</link>
+                            </odkazy>
+                            <kategorie_popis>B - Negativní dotaz nad spojením alespoň dvou tabulek</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>C</kategorie>
+                            <odkazy>
+                                    <link url="#D20">D20</link>
+                            </odkazy>
+                            <kategorie_popis>C - Vyber ty, kteří mají vztah POUZE k ...</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>D1</kategorie>
+                            <odkazy>
+                                    <link url="#D4">D4</link>
+                            </odkazy>
+                            <kategorie_popis>D1 - Vyber ty, kteří/které jsou ve vztahu se všemi - dotaz s univerzální kvantifikací</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>D2</kategorie>
+                            <odkazy>
+                                    <link url="#D5">D5</link>
+                            </odkazy>
+                            <kategorie_popis>D2 - Kontrola výsledku dotazu z kategorie D1</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F1</kategorie>
+                            <odkazy>
+                                    <link url="#D2">D2</link>
+                                    <link url="#D7">D7</link>
+                                    <link url="#D15">D15</link>
+                                    <link url="#D19">D19</link>
+                                    <link url="#D20">D20</link>
+                            </odkazy>
+                            <kategorie_popis>F1 - JOIN ON</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F1R</kategorie>
+                            <odkazy>
+                                    <link url="#D2">D2</link>
+                                    <link url="#D15">D15</link>
+                                    <link url="#D19">D19</link>
+                                    <link url="#D20">D20</link>
+                            </odkazy>
+                            <kategorie_popis>F1 (RA) - JOIN ON</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F2</kategorie>
+                            <odkazy>
+                                    <link url="#D5">D5</link>
+                                    <link url="#D11">D11</link>
+                                    <link url="#D16">D16</link>
+                                    <link url="#D25">D25</link>
+                                    <link url="#D26">D26</link>
+                            </odkazy>
+                            <kategorie_popis>F2 - NATURAL JOIN|JOIN USING</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F2R</kategorie>
+                            <odkazy>
+                                    <link url="#D5">D5</link>
+                                    <link url="#D16">D16</link>
+                                    <link url="#D25">D25</link>
+                            </odkazy>
+                            <kategorie_popis>F2 (RA) - NATURAL JOIN|JOIN USING</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F3</kategorie>
+                            <odkazy>
+                                    <link url="#D13">D13</link>
+                            </odkazy>
+                            <kategorie_popis>F3 - CROSS JOIN</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F4</kategorie>
+                            <odkazy>
+                                    <link url="#D14">D14</link>
+                            </odkazy>
+                            <kategorie_popis>F4 - LEFT|RIGHT OUTER JOIN</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>F5</kategorie>
+                            <odkazy>
+                                    <link url="#D10">D10</link>
+                            </odkazy>
+                            <kategorie_popis>F5 - FULL (OUTER) JOIN</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G1</kategorie>
+                            <odkazy>
+                                    <link url="#D1">D1</link>
+                                    <link url="#D4">D4</link>
+                                    <link url="#D6">D6</link>
+                                    <link url="#D7">D7</link>
+                                    <link url="#D8">D8</link>
+                                    <link url="#D23">D23</link>
+                            </odkazy>
+                            <kategorie_popis>G1 - Vnořený dotaz v klauzuli WHERE</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G1R</kategorie>
+                            <odkazy>
+                                    <link url="#D1">D1</link>
+                                    <link url="#D4">D4</link>
+                            </odkazy>
+                            <kategorie_popis>G1 (RA) - Vnořený dotaz v klauzuli WHERE</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G2</kategorie>
+                            <odkazy>
+                                    <link url="#D17">D17</link>
+                            </odkazy>
+                            <kategorie_popis>G2 - Vnořený dotaz v klauzuli FROM</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G3</kategorie>
+                            <odkazy>
+                                    <link url="#D9">D9</link>
+                            </odkazy>
+                            <kategorie_popis>G3 - Vnořený dotaz v klauzuli SELECT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G4</kategorie>
+                            <odkazy>
+                                    <link url="#D1">D1</link>
+                                    <link url="#D4">D4</link>
+                                    <link url="#D7">D7</link>
+                            </odkazy>
+                            <kategorie_popis>G4 - Vztažený vnořený dotaz (EXISTS, NOT EXISTS)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>G4R</kategorie>
+                            <odkazy>
+                                    <link url="#D1">D1</link>
+                                    <link url="#D4">D4</link>
+                            </odkazy>
+                            <kategorie_popis>G4 (RA) - Vztažený vnořený dotaz (EXISTS, NOT EXISTS)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H1</kategorie>
+                            <odkazy>
+                                    <link url="#D16">D16</link>
+                            </odkazy>
+                            <kategorie_popis>H1 - Množinové sjednocení - UNION</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H2</kategorie>
+                            <odkazy>
+                                    <link url="#D5">D5</link>
+                                    <link url="#D7">D7</link>
+                                    <link url="#D20">D20</link>
+                            </odkazy>
+                            <kategorie_popis>H2 - Množinový rozdíl - MINUS nebo EXCEPT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H2R</kategorie>
+                            <odkazy>
+                                    <link url="#D5">D5</link>
+                                    <link url="#D20">D20</link>
+                            </odkazy>
+                            <kategorie_popis>H2 (RA) - Množinový rozdíl - MINUS nebo EXCEPT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H3</kategorie>
+                            <odkazy>
+                                    <link url="#D15">D15</link>
+                                    <link url="#D21">D21</link>
+                            </odkazy>
+                            <kategorie_popis>H3 - Množinový průnik - INTERSECT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>H3R</kategorie>
+                            <odkazy>
+                                    <link url="#D15">D15</link>
+                            </odkazy>
+                            <kategorie_popis>H3 (RA) - Množinový průnik - INTERSECT</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>I1</kategorie>
+                            <odkazy>
+                                    <link url="#D3">D3</link>
+                                    <link url="#D6">D6</link>
+                                    <link url="#D9">D9</link>
+                                    <link url="#D18">D18</link>
+                                    <link url="#D22">D22</link>
+                            </odkazy>
+                            <kategorie_popis>I1 - Agregační funkce (count|sum|min|max|avg)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>I2</kategorie>
+                            <odkazy>
+                                    <link url="#D3">D3</link>
+                                    <link url="#D6">D6</link>
+                                    <link url="#D18">D18</link>
+                            </odkazy>
+                            <kategorie_popis>I2 - Agregační funkce nad seskupenými řádky - GROUP BY (HAVING)</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>J</kategorie>
+                            <odkazy>
+                                    <link url="#D7">D7</link>
+                            </odkazy>
+                            <kategorie_popis>J - Stejný dotaz ve třech různých formulacích SQL</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>K</kategorie>
+                            <odkazy>
+                                    <link url="#D3">D3</link>
+                            </odkazy>
+                            <kategorie_popis>K - Všechny klauzule v 1 dotazu - SELECT FROM WHERE GROUP BY HAVING ORDER BY</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>L</kategorie>
+                            <odkazy>
+                                    <link url="#D12">D12</link>
+                            </odkazy>
+                            <kategorie_popis>L - VIEW</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>M</kategorie>
+                            <odkazy>
+                                    <link url="#D12">D12</link>
+                            </odkazy>
+                            <kategorie_popis>M - Dotaz nad pohledem</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>N</kategorie>
+                            <odkazy>
+                                    <link url="#D11">D11</link>
+                            </odkazy>
+                            <kategorie_popis>N - INSERT, který vloží do některé tabulky množinu řádků, které jsou vybrány dotazem z vybraných tabulek (příkaz INSERT, ve kterém je klauzule VALUES nahrazena vnořeným poddotazem.</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>O</kategorie>
+                            <odkazy>
+                                    <link url="#D8">D8</link>
+                                    <link url="#D23">D23</link>
+                            </odkazy>
+                            <kategorie_popis>O - UPDATE s vnořeným SELECT příkazem</kategorie_popis>
+                        </radek>
+                        <radek>
+                            <kategorie>P</kategorie>
+                            <odkazy>
+                                    <link url="#D6">D6</link>
+                            </odkazy>
+                            <kategorie_popis>P - DELETE s vnořeným SELECT příkazem</kategorie_popis>
+                        </radek>
+            </pokryti_dotazu>
+        </queries>
+        <scripts>
+            <title>Scripts</title>
+            <para>
+                <link url="./create.sql">create.sql</link>
+            </para>
+            <para>
+                <link url="./insert.sql">insert.sql</link>
+            </para>
+        </scripts>
+        <conclussions>
+            <title>Závěr</title>
+                    <para>Byla to moje první zkušenost s prací na databázích. Celkově byl proces příjemný a práce s portálem byla jednodušší. Bohužel jsem kvůli jiným předmětům odkládal 3. kontrolní bod a musel jsem hodně spěchat. Bylo zajímavé pracovat na databázích od nuly, přijít s nápadem, realizovat ho, možná v budoucnu spojím svůj život s databázemi po DBS. Ke konci už chyběla fantazie na dotázy. Jsem rád, že jsem takovou zkušenost získal.</para>
+        </conclussions>
+        <references>
+            <title>Zdroje</title>
+                    <para>1. Stránky předmětu DBS. BI-DBS FIT ČVUT Course Pages [online](https://courses.fit.cvut.cz/BI-DBS/). Dostupné z: https://courses.fit.cvut.cz</para>
+                    <para>2. Ukázková semestrální práce Zoo ve skluzu. Dostupné z:https://users.fit.cvut.cz/~hunkajir/dbs2/main.xml</para>
+                    <para>3. Mockaroo Random Data Generator and API Mocking Tool. | JSON / CSV / SQL / Excel [online](https://www.mockaroo.com/) Dostupné z: https://www.mockaroo.com/</para>
+                    <para>4. Kategorie semestrální práce BI-DBS. Playlist od Jiří Hunky [online](https://www.youtube.com/playlist?list=PLBAJqytZusMo6czA4nW5_k89Aok_g7-pF). Dostupné z:https://www.youtube.com/playlist?list=PLBAJqytZusMo6czA4nW5_k89Aok_g7-pF</para>
+                    <para>5. Většina jmen a nazvů ze hry World of Warcraft. Dostupné z:https://wowwiki-archive.fandom.com/wiki/Portal:Main</para>
+                    <para>6. SQL Tutorial W3 School. Dostupné z: https://www.w3schools.com/sql/default.asp</para>
+                    <para>7. Nejlepší překladatel na světě DeepL. Dostupné z: https://www.deepl.com/translator</para>
+        </references>
+    </content>
+</sproject>
